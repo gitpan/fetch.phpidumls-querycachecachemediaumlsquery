@@ -1,0 +1,215 @@
+<HTML>
+<HEAD>
+<TITLE>UMLSQuery - A module to query a umls mysql installation</TITLE>
+<LINK REV="made" HREF="mailto:">
+</HEAD>
+
+<BODY>
+
+<A NAME="__index__"></A>
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#name">NAME</A></LI>
+	<LI><A HREF="#synopsis">SYNOPSIS</A></LI>
+	<LI><A HREF="#description">DESCRIPTION</A></LI>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="name">NAME</A></H1>
+<P>UMLSQuery - A module to query a umls mysql installation</P>
+<P>
+<HR>
+<H1><A NAME="synopsis">SYNOPSIS</A></H1>
+<PRE>
+    use UMLSQuery;</PRE>
+<PRE>
+        my $U = new UMLSQuery;</PRE>
+<PRE>
+        $U-&gt;init( u =&gt; 'username',
+                          p =&gt; 'password',
+                          h =&gt; 'hostname',
+                          dbname =&gt; 'umls');</PRE>
+<PRE>
+        $U-&gt;getCUI(string/aui/sui/lui, sab=&gt;)
+        $U-&gt;getAUI(string/cui/sui/lui, sab=&gt;)
+        $U-&gt;getSTR(string/cui/aui/sui/lui, sab=&gt;)
+        $U-&gt;getSAB(string/cui/aui/sui/lui)</PRE>
+<PRE>
+        $U-&gt;mapToId(phrase, idtype=&gt;cui/lui/sui/aui, sab=&gt;)</PRE>
+<PRE>
+        $U-&gt;getParents(aui/cui, rela=&gt;, sab=&gt;)
+        $U-&gt;getCommonParent(aui/cui, aui/cui, rela=&gt;, sab=&gt;)</PRE>
+<PRE>
+        $U-&gt;getChildren(aui/cui, rela=&gt; sab=&gt;)
+        $U-&gt;getCommonChild(aui/cui, aui/cui, rela=&gt;, sab=&gt;)</PRE>
+<PRE>
+        $U-&gt;getDistBF(cui_1, cui_2,rela=&gt;)
+        $U-&gt;getAvailableSAB()</PRE>
+<PRE>
+        $U-&gt;finish()</PRE>
+<P>
+<HR>
+<H1><A NAME="description">DESCRIPTION</A></H1>
+<P>This module will allow you to connect to a mysql UMLS installation and run common
+queries. If you have a query that you want, contact me at <A HREF="mailto:nigam@stanford.edu.">nigam@stanford.edu.</A></P>
+<DL>
+<DT><STRONG><A NAME="item_init">$U-&gt;init(u =&gt; 'username', p =&gt; 'password', h =&gt; 'hostname', dbname =&gt; 'umls');</A></STRONG><BR>
+<DD>
+Provide a username, password, host and dbname of a valid UMLS mysql database.
+You can optionally provide a port=&gt; if your mysql is not on port 3306
+<P></P>
+<DT><STRONG><A NAME="item_getCUI">$U-&gt;getCUI(string/aui/sui/lui, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts any text string, an aui (Atom Unique Identifier),
+sui (String Unique Identifier) or lui (Lexical Unique Identifer) and gets its cui
+(Concept Unique Identifier). The search is for an exact match. To restrict the
+search to a particular dictionary provide the sab value. The following searches
+for 'prostate' in the SNOMED-CT vocabulary.
+<PRE>
+        $U-&gt;getCUI('prostate', sab=&gt;'SNOMEDCT')</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getAUI">$U-&gt;getAUI(string/cui/sui/lui, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts any text string, a cui (Concept Unique Identifier),
+sui (String Unique Identifier) or lui (Lexical Unique Identifier) and gets its aui
+(Atom Unique Identifer). The search is for an exact match. To restrict the
+search to a particular dictionary provide the sab value. The following searches
+for 'prostate' in the SNOMED-CT vocabulary.
+<PRE>
+        $U-&gt;getAUI('prostate', sab=&gt;'SNOMEDCT')</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getSTR">$U-&gt;getSTR(cui/aui/sui/lui, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a cui (Concept Unique Identifier), aui (Atom Unique Identifer)
+sui (String Unique Identifier) or lui (Lexical Unique Identifier) and gets its string.
+The search is for an exact match. To restrict the search to a particular dictionary
+provide the sab value. The following searches for 'A0812060' in the SNOMED-CT vocabulary.
+<PRE>
+        $U-&gt;getSTR('A0812060', sab=&gt;'SNOMEDCT')</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getSAB">$U-&gt;<CODE>getSAB(string/cui/aui/sui/lui)</CODE></A></STRONG><BR>
+<DD>
+This function accepts a cui (Concept Unique Identifier), aui (Atom Unique Identifer)
+sui (String Unique Identifier) or lui (Lexical Unique Identifier) and gets the dictionary/s
+it belongs to. The search is for an exact match (if a string is provided).
+<PRE>
+        $U-&gt;getSAB('prostate')</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_mapToId">$U-&gt;mapToId(phrase, idtype=&gt;cui/lui/sui/aui, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a phrase (upto 10 words) and maps it to the chosen idtype (can be
+restricted by sab if desired. The function first looks for an exact match for the phrase,
+if none is found, then will generate all possible permutations and attempt an exact match
+for each one (with right truncation of words to look for partial matches). The following
+tries to find a CUI belonging to the SNOMED-CT for 'intraductal carcinoma of prostate'.
+<PRE>
+        $U-&gt;mapToId('intraductal carcinoma of prostate', idtype=&gt;'cui', sab=&gt;'SNOMEDCT');</PRE>
+<P>The function returns a hash which has a particular permutation as its key and the value is
+an array of pairs of id - string. The above examle returns:</P>
+<PRE>
+        key             id      string
+        ------------------------------
+        carcinoma       C0007097 Carcinoma
+        intraductal     C1644197 Intraductal
+        prostate        C0033572 Prostate
+        carcinoma prostate      C0600139 Carcinoma prostate
+        intraductal carcinoma   C0007124 Intraductal carcinoma
+        prostate carcinoma      C0600139 Prostate carcinoma
+        carcinoma of prostate   C0600139 Carcinoma of prostate</PRE>
+<P>in case of mutliple matches, the id - string pair will be pushed onto the array.</P>
+<P></P>
+<DT><STRONG><A NAME="item_getParents">$U-&gt;getParents(aui/cui, rela=&gt;, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a cui or aui and returns all its parents (optionally restricted
+along a particular relationship type (rela, 188 posible values) and a vocabulary). The
+example below finds all isa parents of 'C0600139'.
+<PRE>
+        $U-&gt;getParents('C0600139', rela=&gt;'isa');</PRE>
+<P>The function returns a hash, where the keys are the direct parents of the id and the
+values are the ids forming the path to the root node. The ids are always reported as
+aui. The example above returns:</P>
+<PRE>
+        direct parent   Path to the root
+        ---------------------------------------------------
+        A3407646        A3684559.A3713095.A3506985.A3407646</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getCommonParent">$U-&gt;getCommonParent(aui/cui, aui/cui, rela=&gt;, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a pair of cuis or auis and returns the common parent (optionally restricted
+along a particular relationship type (rela, 188 posible values) and a vocabulary). The
+example below finds common parents of 'C0600139','C0007124' along any rela type.
+<PRE>
+        $U-&gt;getCommonParent('C0600139','C0007124');</PRE>
+<P>The function returns the common parent (aui) and the distance (dist) from the query nodes.
+The above example returns:</P>
+<PRE>
+        aui             dist
+        -------------------------------------------------------
+        A0689089        4 links from C0600139 3 links from C0007124</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getChildren">$U-&gt;getChildren(aui/cui, rela=&gt; sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a cui or aui and returns all its direct children (optionally restricted
+along a particular relationship type (rela, 188 posible values) and a vocabulary). The
+example below finds all isa children of 'C0376358'.
+<PRE>
+        $U-&gt;getChildren('C0376358',rela=&gt;'isa');</PRE>
+<P>The function returns a hash, where the keys are the direct children of the id and the
+values is the query id. The ids are reported in the form of the query id. The example above
+returns:</P>
+<PRE>
+        child   parent
+        ------------------------
+        C0347001        C0376358
+        C1330959        C0376358
+        C1302530        C0376358
+        C1282482        C0376358</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getCommonChild">$U-&gt;getCommonChild(aui/cui, aui/cui, rela=&gt;, sab=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts a pair of cuis or auis and returns the common child (optionally restricted
+along a particular relationship type (rela, 188 posible values) and a vocabulary). The
+example below finds common parents of 'C0376358','C0346554' along any rela type.
+<PRE>
+        $U-&gt;getCommonChild('C0376358','C0346554')</PRE>
+<P>The function returns the common child and the ids of the query nodes. The example above returns</P>
+<PRE>
+        C0600139        common child of C0376358 and C0346554</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_getDistBF">$U-&gt;getDistBF(cui_1, cui_2,rela=&gt;,maxR=&gt;)</A></STRONG><BR>
+<DD>
+This function accepts two cuis and performs a breadth first search from cui_1 to find cui_2 and
+reports the number of links at which cui_2 is found. The search is aborted if cui_2 is not found
+in a radius of maxR links. (maxR is set to 3 if it is not provided)
+<PRE>
+        $U-&gt;getDistBF('C0600139','C0007124')</PRE>
+<P>The above example returns 2.</P>
+<P></P>
+<DT><STRONG><A NAME="item_getAvailableSAB">$U-&gt;getAvailableSAB('search string')</A></STRONG><BR>
+<DD>
+This function returns a hash where the keys are the 'sab' and the values are the descriptions
+of those sab that contain the 'search string'. The example below searches for sab that have
+SNOMED in their description.
+<PRE>
+        $U-&gt;getAvailableSAB('SNOMED')</PRE>
+<P>It returns:</P>
+<PRE>
+        sab             description
+        -------------------------------------------------
+        SNOMEDCT        SNOMED Clinical Terms, 2006_01_31
+        SCTSPA  SNOMED Clinical Terms, Spanish Language Edition, 2005_10_31
+        SNM     SNOMED-2, 2
+        SNMI    SNOMED International, 1998</PRE>
+<P></P>
+<DT><STRONG><A NAME="item_finish">$U-&gt;<CODE>finish()</CODE></A></STRONG><BR>
+<DD>
+Disconnect and end the querying.
+</DL>
+
+</BODY>
+
+</HTML>
